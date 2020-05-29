@@ -2,6 +2,9 @@ const listModule = require ('./list');
 const cardModule = require ('./card');
 const utilModule = require ('./utils');
 
+const Sortable = require ('sortablejs');
+
+
 var app = {
     base_url: "http://localhost:5050",
   
@@ -14,6 +17,13 @@ var app = {
   
       app.addListenertoActions();
       listModule.getListsFromAPI();
+
+      // on active sortable sur le container des listes
+      const container = document.getElementById('listContainer');
+      new Sortable(container, {
+        draggable: ".panel",
+        onEnd: app.handleListDropped
+    });
     },
   
     addListenertoActions: () => {
@@ -40,6 +50,27 @@ var app = {
   
       /** Soumission du formulaire "éditer une carte" */
       document.querySelector('#editCardModal form').addEventListener('submit', cardModule.handleEditCardForm);
+    },
+
+    handleListDropped: (event) => {
+      // 1. récupérer toutes les listes dans l'ordre
+      const allLists = document.querySelectorAll('.panel');
+  
+      // 2. mettre à jour la positions de chacune des listes
+      let position = 0;
+      for (let list of allLists) {
+        let listId = list.getAttribute('list-id');
+  
+        let formData = new FormData();
+        formData.set('position', position);
+  
+        fetch(app.base_url+'/list/'+ listId, {
+          method: "PATCH",
+          body: formData
+        });
+  
+        position++;
+      }
     }
   };
 

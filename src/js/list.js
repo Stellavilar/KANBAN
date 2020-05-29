@@ -1,5 +1,6 @@
 const cardModule = require ('./card');
 const utilsModule = require ('./utils');
+const Sortable = require('sortablejs');
 
 const listModule = {
     base_url: '',
@@ -34,7 +35,12 @@ const listModule = {
     newList.querySelector('.edit-list-form').addEventListener('submit', listModule.handleEditListForm);
     // - supprimer la liste => clic sur la poubelle
     newList.querySelector('.delete-list-btn').addEventListener('click', listModule.handleDeleteList);
-
+    //Ajout de sortable pour faire glisser les listes
+    const container = newList.querySelector('.panel-block');
+    new Sortable(container, {
+      group: "lists",
+      onEnd: listModule.handleCardDropped
+    });
     //4. ajouter "nouvelleListe" au DOM, au bon endroit.
     // - 4.1 cibler "la colonne avec des boutons"
     // - 4.2 ajouter nouvelle liste juste avant "la colonne avec des boutons"
@@ -175,7 +181,43 @@ const listModule = {
       console.error(error);
       alert('Impossible de récupérer les listes');
     }
-  }
+  },
+
+    /** Méthode lancée par Sortable lorsqu'on drop une carte dans une liste */
+    handleCardDropped: (event) => {
+      console.log(event);
+      // event.item contient l'élément déplacé
+      const cardElement = event.item;
+      // event.from contient la liste d'origine
+      const originList = event.from;
+      // event.to contient la liste d'arrivée
+      const targetList = event.to;
+  
+      // Note : lorsqu'on bouge une carte, on veut update sa position. MAIS, on veut aussi update les positions de toutes les autres cartes dans la liste !
+  
+      // 1. récupérer l'id de la liste d'arrivée
+      const listId = targetList.closest('.panel').getAttribute('list-id');
+  
+      // 2. récupérer toutes les cartes dans la liste d'arrivée
+      const allCards = targetList.querySelectorAll('.box');
+  
+      // 3. mettre à jour toutes ces cartes !
+      let position = 0;
+      for (let card of allCards) {
+        let cardId = card.getAttribute('card-id');
+        let formData = new FormData();
+  
+        formData.set('position', position);
+        formData.set('list_id', listId);
+  
+        fetch( listModule.base_url+'/card/'+cardId, {
+          method: "PATCH",
+          body: formData
+        });
+        position++;
+      }
+  
+    },
 };
 
 module.exports = listModule;
