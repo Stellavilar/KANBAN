@@ -108,14 +108,30 @@ var app = {
     },
   
     //Soumettre un form 'ajouter une carte'
-    handleAddCardForm: (event) => {
-      event.preventDefault();
-      //Récupérer les valeurs du formulaire:
-      var formData = new FormData(event.target);
-      //Passer ces valeurs à mekeCardInDOM:
-      app.makeCardInDOM(formData.get('title'), formData.get('list_id'));
-      //Fermer la modale:
-      app.hideModals();
+    handleAddCardForm: async (event) => {
+      try {
+        event.preventDefault(); // on empêche la page de se recharger !
+        //1. récupérer les valeurs du formulaire
+        var formData = new FormData( event.target );
+  
+        //2. envoyer les infos à l'API, et attendre une réponse
+        let response = await fetch( app.base_url+'/card', {
+          method: "POST",
+          body: formData
+        });
+        if( !response.ok) {
+          return alert('Impossible de créer la carte !');
+        }
+        let newCard = await response.json();
+  
+        //3. utiliser la réponse pour créer la carte dans le DOM
+        app.makeCardInDOM( newCard.title, newCard.list_id, newCard.id, newCard.color );
+        //4. fermer la modale
+        app.hideModals();
+      } catch (error) {
+        console.log(error);
+        alert('Impossible de créer la carte !');
+      }
     },
   
     //Fabriquer une carte:
