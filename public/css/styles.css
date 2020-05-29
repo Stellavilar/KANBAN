@@ -1,8 +1,27 @@
 body {
-    background-color: #ccc;
     height: 100vh;
+    font-family: 'Quicksand', sans-serif;
+    font-weight: bold;
+    background-color: #D6D8D8;
 }
 
 .add-card-btn {
   margin-right: 0.2rem;
+}
+.has-background-info {
+  background-color: #1E1E1E!important;
+  padding: 10px;
+}
+.has-text-danger {
+  color: white!important;
+  padding: 15px;
+}
+.has-text-white {
+  color: #8D1D1A;
+  padding: 15px;
+}
+.button.is-success {
+  background-color: #FF6347;
+  border-color: transparent;
+  color: #fff;
 }
