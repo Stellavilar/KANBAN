@@ -1,5 +1,5 @@
 const Sequelize = require ('sequelize');
 
-const client = new Sequelize(process.env.PG_URL);
+const dbConnection = new Sequelize(process.env.PG_URL);
 
-module.exports = client;
+module.exports = dbConnection;
