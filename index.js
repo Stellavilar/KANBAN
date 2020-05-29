@@ -21,6 +21,8 @@ app.use( bodyParser.none() );
 // ici, req.body existe déjà (grace à urlencoded), et on veut l'assinir AVANT de le passer au router
 app.use( sanitizeMiddleware );
 
+app.use(express.static('public'));
+
 app.use(router);
 
 app.listen(PORT, () => {
