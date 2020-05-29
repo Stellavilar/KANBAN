@@ -62,15 +62,31 @@ var app = {
     },
   
     //Soumettre un form 'ajouter une liste':
-    handleAddListForm : (event) => {
-      //On empêche la page de se recharger:
-      event.preventDefault();
-      //On récupère les données (name) avec formData:
-      var formData = new FormData(event.target);
-      //On envoie les données (name) à la méthode suivante:
-      app.makeListInDOM(formData.get('name'));
-      //On ferme la modale:
-      app.hideModals();
+    handleAddListForm : async (event) => {
+      try {
+        //Récupérer les valeurs du formulaire
+        var formData = new FormData(event.target);
+        //2. Envoyer les infos du formulaire à l'api (et attendre une réponse)
+        let response = await fetch( app.base_url+'/list', {
+          method: "POST",
+          body: formData
+        });
+        if (!response.ok) {
+          let error = await response.json();
+          console.log(error);
+          return alert('Impossible de créer la liste !\n' + error.errors[0].message);
+        }
+        let newList = await response.json();
+
+        //3. utiliser la réponse de l'api, et passer les bonnes valeurs à makeListInDOM pour créer la liste dans le HTML
+        app.makeListInDOM( newList.title, newList.id );
+        //4. fermer la modale
+        app.hideModals();
+
+      } catch (error) {
+        console.log(error);
+        alert('Impossible de créer la liste !')
+      }
     },
   
   
