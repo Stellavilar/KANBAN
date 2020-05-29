@@ -103,13 +103,16 @@ var app = {
     },
   
     //Fabriquer une carte:
-    makeCardInDOM: (cardTitle, listId) => {
+    makeCardInDOM: (cardTitle, listId, cardId, cardColor) => {
       //1. récupérer le template
       const template = document.getElementById('cardTemplate');
       //2. cloner le template
       let newCard = document.importNode(template.content, true);
       //3. mettre à jour le titre de la carte
       newCard.querySelector('.card-title').textContent = cardTitle;
+      // 3bis. Modifier aussi l'id de la carte, et son bgColor
+      newCard.querySelector('.box').setAttribute('card-id', cardId);
+      newCard.querySelector('.box').style.backgroundColor = cardColor;
       //4. ajouter la nouvelle carte dans la bonne liste
       document.querySelector(`[list-id="${listId}"] .panel-block`).appendChild(newCard);
     },
@@ -135,7 +138,7 @@ var app = {
         // ... puis, pour chaque carte de la liste...
         for (let card of list.cards) {
           // ...on crée la carte dans le DOM
-          app.makeCardInDOM(card.title, list.id);
+          app.makeCardInDOM(card.title, list.id, card.id, card.color);
         }
       }      
     } catch (error) {
