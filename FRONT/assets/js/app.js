@@ -162,6 +162,39 @@ var app = {
     }
 
   },
+
+  /** Méthode pour supprimer une carte */
+  handleDeleteCard: async (event) => {
+    try {
+      event.preventDefault();
+      // 0. confirmation utilisateur !
+      if ( !confirm('Voulez-vous supprimer cette carte ?') ) {
+        return;
+      }
+
+      // 1. récupérer l'id de la carte ciblée
+      // event.target, c'est mon bouton...
+      const cardElement = event.target.closest('.box');
+      const cardId = cardElement.getAttribute('card-id');
+
+      // 2. envoyer des infos à l'API => route DELETE /card/:id
+      let response = await fetch(app.base_url+'/card/'+cardId,{
+        method: 'DELETE'
+      });
+
+      // 3. supprimer la carte du DOM
+      if (!response.ok) {
+        return alert('Impossible de supprimer la carte !');
+      }
+      // on se fiche totalement du contenu de la réponse. Tant que "ok", on supprime la carte du DOM!
+      cardElement.remove();
+
+    } catch (error) {
+      console.log(error);
+      alert('Impossible de supprimer la carte !');
+    }
+  },
+
   
   
     //Fabriquer une liste et l'ajouter au DOM:
@@ -185,6 +218,8 @@ var app = {
     newList.querySelector('h2').addEventListener('dblclick', app.showEditListForm);
     // - modifier le titre => submit formulaire
     newList.querySelector('.edit-list-form').addEventListener('submit', app.handleEditListForm);
+    // - supprimer la liste => clic sur la poubelle
+    newList.querySelector('.delete-list-btn').addEventListener('click', app.handleDeleteList);
 
     //4. ajouter "nouvelleListe" au DOM, au bon endroit.
     // - 4.1 cibler "la colonne avec des boutons"
@@ -230,7 +265,10 @@ var app = {
       // 3bis. Modifier aussi l'id de la carte, et son bgColor
       newCard.querySelector('.box').setAttribute('card-id', cardId);
       newCard.querySelector('.box').style.backgroundColor = cardColor;
+      // - clic sur le stylo => modifier la carte
       newCard.querySelector('.edit-card-btn').addEventListener('click', app.showEditCardModal);
+      // - clic sur la poubelle => supprimer la carte
+    newCard.querySelector('.delete-card-btn').addEventListener('click', app.handleDeleteCard);
       //4. ajouter la nouvelle carte dans la bonne liste
       document.querySelector(`[list-id="${listId}"] .panel-block`).appendChild(newCard);
     },
@@ -267,6 +305,36 @@ var app = {
         event.target.closest('.column').querySelector('h2').classList.remove('is-hidden');
       }
     },
+
+    /** Méthode pour supprimer une liste */
+  handleDeleteList: async (event) => {
+    try {
+      //1. récupérer l'élément liste (event.target, c'est mon bouton)
+      const listElement = event.target.closest('.panel');
+      //2. vérifier que la liste ne contient plus de cartes
+      if( listElement.querySelectorAll('.box').length > 0) {
+        return alert('Impossible de supprimer une liste non vide !');
+      }
+      //3. confirmation utilisateur
+      if ( !confirm('Voulez-vous supprimer cette liste ?') ) {
+        return;
+      }
+      //4. envoyer une requete à l'API
+      const listId = listElement.getAttribute('list-id');
+      let response = await fetch( app.base_url+'/list/'+listId, {
+        method: "DELETE"
+      });
+
+      //5. si tout va bien, supprimer la liste du DOM
+      if (response.ok) {
+        listElement.remove();
+      }
+
+    } catch (error) {
+      console.log(error);
+      alert('Impossible de supprimer la liste !');
+    }
+  },
 
     /**
    *  Méthodes API 
