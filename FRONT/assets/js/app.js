@@ -132,6 +132,11 @@ var app = {
       // pour chaq liste...
       for (let list of lists) {
         app.makeListInDOM(list.title, list.id);
+        // ... puis, pour chaque carte de la liste...
+        for (let card of list.cards) {
+          // ...on crée la carte dans le DOM
+          app.makeCardInDOM(card.title, list.id);
+        }
       }      
     } catch (error) {
       console.error(error);
