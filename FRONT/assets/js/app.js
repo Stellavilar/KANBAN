@@ -1,3 +1,13 @@
+//Function to convert hex format to a rgb color
+function rgb2hex(rgb){
+  rgb = rgb.match(/^rgba?[\s+]?\([\s+]?(\d+)[\s+]?,[\s+]?(\d+)[\s+]?,[\s+]?(\d+)[\s+]?/i);
+  return (rgb && rgb.length === 4) ? "#" +
+   ("0" + parseInt(rgb[1],10).toString(16)).slice(-2) +
+   ("0" + parseInt(rgb[2],10).toString(16)).slice(-2) +
+   ("0" + parseInt(rgb[3],10).toString(16)).slice(-2) : '';
+ };
+
+
 var app = {
 
     base_url: "http://localhost:5050",
@@ -31,6 +41,9 @@ var app = {
   
       //Soumettre le formulaire 'ajouter une carte':
       document.querySelector('#addCardModal form').addEventListener('submit', app.handleAddCardForm);
+
+      /** Soumission du formulaire "éditer une carte" */
+      document.querySelector('#editCardModal form').addEventListener('submit', app.handleEditCardForm);
   
     },
   
@@ -61,6 +74,26 @@ var app = {
       // au passage, on préremplie l'input "title" avec le contenu du H2
       theForm.querySelector('input[name="title"]').value = event.target.textContent;
     },
+
+    showEditCardModal: (event) => {
+      // event.target représente l'icone stylo
+      const cardElement = event.target.closest('.box');
+      // 1. récupérer quelques infos sur la carte
+      const cardId = cardElement.getAttribute('card-id');
+      const cardTitle = cardElement.querySelector('.card-title').textContent;
+      const cardColor = cardElement.style.backgroundColor;
+  
+      // 2. préremplir le formulaire avec ces infos
+      const theForm = document.querySelector('#editCardModal form');
+      theForm.querySelector('input[name="card_id"]').value = cardId;
+      theForm.querySelector('input[name="title"]').value = cardTitle;
+      // TODO: voir ce qui ne marche pas avec les couleurs....
+      theForm.querySelector('input[name="color"]').value = rgb2hex(cardColor);
+  
+      // 3. montrer la modale
+      document.querySelector('#editCardModal').classList.add('is-active');
+    },
+  
   
     //Fermer les modales
     hideModals : () => {
@@ -99,6 +132,36 @@ var app = {
         alert('Impossible de créer la liste !')
       }
     },
+
+     /** Méthode pour gérer la soumission du formulaire "éditer une carte" */
+  handleEditCardForm: async (event) => {
+    try {
+      event.preventDefault();
+      // 1. récupérer les infos du formulaire
+      const formData = new FormData(event.target);
+      // 2. envoyer ces infos à l'API, et attendre une réponse
+      const cardId = formData.get('card_id');
+      let response = await fetch( app.base_url+'/card/'+cardId, {
+        method: "PATCH",
+        body: formData
+      });
+      if (!response.ok) {
+        console.log(response);
+        alert('Impossible de modifier la carte !');
+      }
+      // 3. mettre à jour la carte avec les nouvelles infos
+      const modifiedCard = await response.json();
+      let cardElement = document.querySelector(`[card-id="${cardId}"]`);
+      cardElement.style.backgroundColor = modifiedCard.color;
+      cardElement.querySelector('.card-title').textContent = modifiedCard.title;
+      // 4. fermer la modale
+      app.hideModals();
+    } catch (error) {
+      console.log(error);
+      alert('Impossible de modifier la carte !');
+    }
+
+  },
   
   
     //Fabriquer une liste et l'ajouter au DOM:
@@ -167,6 +230,7 @@ var app = {
       // 3bis. Modifier aussi l'id de la carte, et son bgColor
       newCard.querySelector('.box').setAttribute('card-id', cardId);
       newCard.querySelector('.box').style.backgroundColor = cardColor;
+      newCard.querySelector('.edit-card-btn').addEventListener('click', app.showEditCardModal);
       //4. ajouter la nouvelle carte dans la bonne liste
       document.querySelector(`[list-id="${listId}"] .panel-block`).appendChild(newCard);
     },

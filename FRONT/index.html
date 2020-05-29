@@ -85,7 +85,38 @@
         </div>
     </div>
 
-    <!--Template pour les listes-->
+    <div class="modal" id="editCardModal">
+        <div class="modal-background"></div>
+        <div class="modal-card">
+            <form action="" method="POST">
+                <header class="modal-card-head">
+                    <p class="modal-card-title">Éditer une Carte</p>
+                    <button class="delete close" type="button" aria-label="close"></button>
+                </header>
+                <section class="modal-card-body">
+                    <div class="field">
+                        <label class="label">Titre</label>
+                        <div class="control">
+                            <input type="text" class="input" name="title" value="" placeholder="Titre de la Carte">
+                            <input type="hidden" name="card_id">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="label">Couleur</label>
+                        <div class="control">
+                            <input type="color" name="color">
+                        </div>
+                    </div>
+                </section>
+                <footer class="modal-card-foot">
+                    <button class="button is-success">Save changes</button>
+                    <button class="button close" type="button">Cancel</button>
+                </footer>
+            </form>
+        </div>
+    </div>
+
+    <!--Templates-->
     <template id="listTemplate">
         <div class="column panel" list-id="X">
             <div class="panel-heading has-background-info">
@@ -129,7 +160,7 @@
                             Faire les courses
                         </div>
                         <div class="column is-narrow">
-                            <a href="#">
+                            <a href="#" class="edit-card-btn">
                                 <span class="icon is-small has-text-primary">
                                     <i class="fas fa-pencil-alt"></i>
                                 </span>
