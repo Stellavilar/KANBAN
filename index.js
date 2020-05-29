@@ -3,8 +3,8 @@ const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
 
-const router = require ('./BACK/app/router');
-const sanitizeMiddleware = require ('./BACK/app/middleware/sanitise');
+const router = require ('./app/router');
+const sanitizeMiddleware = require ('./app/middleware/sanitise');
 
 const PORT = process.env.PORT || 5050;
 const app = express();
