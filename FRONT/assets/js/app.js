@@ -50,6 +50,17 @@ var app = {
       document.getElementById('addCardModal').classList.add('is-active');
     },
   
+    showEditListForm: (event) => {
+      // l'event est "branché" sur le h2, donc event.target sera toujours le h2 qui nous interesse
+      // rendre le h2 caché
+      event.target.classList.add('is-hidden');
+      // rendre le formulaire visible
+      // pour cibler le formulaire : on "remonte" à div column, et on cherche le form dedans
+      const theForm = event.target.closest('.column').querySelector('form');
+      theForm.classList.remove('is-hidden');    
+      // au passage, on préremplie l'input "title" avec le contenu du H2
+      theForm.querySelector('input[name="title"]').value = event.target.textContent;
+    },
   
     //Fermer les modales
     hideModals : () => {
@@ -92,19 +103,30 @@ var app = {
   
     //Fabriquer une liste et l'ajouter au DOM:
     makeListInDOM : (listTitle, listId) => {
-      alert(`Créer la liste ${listTitle}`)
-      //Récupérer le template pour créer une liste:
-      const template = document.getElementById('listTemplate');
-      //Cloner ce template dans une variable:
-      let newList = document.importNode(template.content, true);
-      //Mettre à jour le nom de la liste:
-      newList.querySelector('h2').textContent = listTitle;
-      //Mettre à jour l'id de la nouvelle liste
-      newList.querySelector('.panel').setAttribute('list-id', listId);
-      //Ajouter des eventListener sur les éléments de la nouvelle liste:
-      newList.querySelector('.add-card-btn').addEventListener('click', app.showAddCardModal);
-      //Ajouter la nouvelle liste au DOM:
-      document.getElementById('buttonsColumn').before(newList);
+    //1. récupérer le template
+    const template = document.getElementById('listTemplate');
+    //2. cloner le template => on récupère un element HTML "nouvelleListe"
+    let newList = document.importNode(template.content, true);
+    //3. mettre à jour le nom de la liste.
+    newList.querySelector('h2').textContent = listTitle;
+
+    //3.alt. mettre à jour l'id de la nouvelle liste
+    newList.querySelector('.panel').setAttribute('list-id', listId);
+    // on en profite pour préremplir l'input du formulaire "éditer la liste"
+    newList.querySelector('input[name="list-id"]').value = listId;
+
+    //3bis. ajouter des eventListener sur les éléments de la nouvelle liste !
+    // - ajouter une carte
+    newList.querySelector('.add-card-btn').addEventListener('click', app.showAddCardModal);
+    // - modifier le titre => clic sur H2
+    newList.querySelector('h2').addEventListener('dblclick', app.showEditListForm);
+    // - modifier le titre => submit formulaire
+    newList.querySelector('.edit-list-form').addEventListener('submit', app.handleEditListForm);
+
+    //4. ajouter "nouvelleListe" au DOM, au bon endroit.
+    // - 4.1 cibler "la colonne avec des boutons"
+    // - 4.2 ajouter nouvelle liste juste avant "la colonne avec des boutons"
+    document.getElementById('buttonsColumn').before(newList);
     },
   
     //Soumettre un form 'ajouter une carte'
@@ -147,6 +169,39 @@ var app = {
       newCard.querySelector('.box').style.backgroundColor = cardColor;
       //4. ajouter la nouvelle carte dans la bonne liste
       document.querySelector(`[list-id="${listId}"] .panel-block`).appendChild(newCard);
+    },
+
+      /** Méthode pour éditer une liste */
+    handleEditListForm: async (event) => {
+      try {
+        event.preventDefault(); // on empeche le rechargement de la page
+
+        //1. récupérer les infos du formulaire
+        var formData = new FormData( event.target );
+        const listId = formData.get('list-id');
+
+        //2. transmettre les infos à l'API, et attendre la réponse
+        let response = await fetch( app.base_url+'/list/'+listId, {
+          method: 'PATCH',
+          body: formData
+        });
+
+        //3. si tout va bien, mettre à jour le h2 dans le DOM
+        if (response.ok) {
+          let list = await response.json();
+          event.target.closest('.column').querySelector('h2').textContent = list.title;
+
+          // alternative : utiliser les infos de formData
+          // event.target.closest('.column').querySelector('h2').textContent = formData.get('title');
+        }
+
+      } catch (error) {
+        console.log(error);
+      } finally {
+        // dans tous les cas...  on réaffiche le titre, et on cache le formulaire
+        event.target.classList.add('is-hidden');
+        event.target.closest('.column').querySelector('h2').classList.remove('is-hidden');
+      }
     },
 
     /**
