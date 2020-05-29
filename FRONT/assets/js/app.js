@@ -1,10 +1,12 @@
 var app = {
 
+    base_url: "http://localhost:5050",
+
     // fonction d'initialisation, lancée au chargement de la page
     init: function () {
       console.log('app.init !');
-  
       app.addListenerToActions();
+      app.getListsFromAPI();
     },
   
     addListenerToActions : () =>{
@@ -73,7 +75,7 @@ var app = {
   
   
     //Fabriquer une liste et l'ajouter au DOM:
-    makeListInDOM : (listTitle) => {
+    makeListInDOM : (listTitle, listId) => {
       alert(`Créer la liste ${listTitle}`)
       //Récupérer le template pour créer une liste:
       const template = document.getElementById('listTemplate');
@@ -81,6 +83,8 @@ var app = {
       let newList = document.importNode(template.content, true);
       //Mettre à jour le nom de la liste:
       newList.querySelector('h2').textContent = listTitle;
+      //Mettre à jour l'id de la nouvelle liste
+      newList.querySelector('.panel').setAttribute('list-id', listId);
       //Ajouter des eventListener sur les éléments de la nouvelle liste:
       newList.querySelector('.add-card-btn').addEventListener('click', app.showAddCardModal);
       //Ajouter la nouvelle liste au DOM:
@@ -109,6 +113,31 @@ var app = {
       //4. ajouter la nouvelle carte dans la bonne liste
       document.querySelector(`[list-id="${listId}"] .panel-block`).appendChild(newCard);
     },
+
+    /**
+   *  Méthodes API 
+   **/
+  getListsFromAPI: async () => {
+    try {
+      // on récupères les données des listes depuis l'API
+      let response = await fetch( app.base_url+'/list' );
+      // on vérifie que l'API n'a pas répondu une erreur
+      if (!response.ok) {
+        alert('Impossible de récupérer les listes');
+        return;
+      }
+
+      let lists = await response.json();
+      console.log(lists);
+      // pour chaq liste...
+      for (let list of lists) {
+        app.makeListInDOM(list.title, list.id);
+      }      
+    } catch (error) {
+      console.error(error);
+      alert('Impossible de récupérer les listes');
+    }
+  },
     
   };
   
