@@ -1,4 +1,5 @@
 const { List } = require('../models');
+const sanitizer = require('sanitizer');
 
 const listController = {
   getAll: async (req, res) => {
@@ -31,7 +32,11 @@ const listController = {
 
   create: async (req, res) => {
     try {
-      const {title, position} = req.body;
+      let {title, position} = req.body;
+
+      // on échappe les caractères spéciaux
+      title = sanitizer.escape(title);
+      position = sanitizer.escape(position);
 
       let newList = new List({title, position});
       // tester des truc? pour quoi faire? Sequelize et la DB d'assure déjà que le titre est unique et non vide !!
